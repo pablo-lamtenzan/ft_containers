@@ -6,7 +6,7 @@
 /*   By: plamtenz <plamtenz@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/25 14:40:13 by plamtenz          #+#    #+#             */
-/*   Updated: 2020/09/25 21:35:30 by plamtenz         ###   ########.fr       */
+/*   Updated: 2020/09/27 14:09:54 by plamtenz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,7 +112,7 @@ namespace ft {
 		typedef ::std::ptrdiff_t														difference_type;
 		typedef std::bidirectional_iterator_tag											iterator_category;
 
-		/* Node ptr use */
+		/* Node ptr use for iterate in the list */
 		Node<not_const_type>															*curr;
 		
 		/* Default class methods: constructors, copy constructor and destuctor */
@@ -150,7 +150,7 @@ namespace ft {
 	};
 	
 	template<class U>
-	class reverse_iterator
+	class rev_iterator
 	{
 		public:
 
@@ -166,40 +166,40 @@ namespace ft {
 		iterator_type										it;
 
 		/* Default class methods: constructors, copy constructor and destructor */
-		reverse_iterator() {}
-		reverse_iterator(const iterator_type &i) : it(i) {}
-		reverse_iterator(const reverse_iterator<not_const_iterator> &rev_it) {
-			reverse_iterator<not_const_iterator> copy = rev_it;
+		rev_iterator() {}
+		rev_iterator(const iterator_type &i) : it(i) {}
+		rev_iterator(const rev_iterator<not_const_iterator> &rev_it) {
+			rev_iterator<not_const_iterator> copy = rev_it;
 			std::swap(it, copy.it);
 			return (*this);
 		}
-		virtual ~reverse_iterator() {}
+		virtual ~rev_iterator() {}
 		
 		/* Implementation of reverse_iterator operators */
-		reverse_iterator			&operator=(const reverse_iterator<not_const_iterator> &target) {
+		rev_iterator				&operator=(const rev_iterator<not_const_iterator> &target) {
 			it = target.it; return (*this);
 		}
-		reverse_iterator			operator+(difference_type nb) { reverse_iterator aux(*this); while (nb--) ++aux; return (aux); }
-		reverse_iterator			operator-(difference_type nb) { reverse_iterator aux(*this); while (nb--) --aux; return (aux); }
-		reverse_iterator			operator++(int) { reverse_iterator aux(*this); --it; return (aux); }
-		reverse_iterator			&operator++() { --it; return (*this); }
-		reverse_iterator			operator--(int) { reverse_iterator aux(*this); ++it; return (aux); }
-		reverse_iterator			&operator--() { ++it; return (*this); }
+		rev_iterator				operator+(difference_type nb) { rev_iterator aux(*this); while (nb--) ++aux; return (aux); }
+		rev_iterator				operator-(difference_type nb) { rev_iterator aux(*this); while (nb--) --aux; return (aux); }
+		rev_iterator				operator++(int) { rev_iterator aux(*this); --it; return (aux); }
+		rev_iterator				&operator++() { --it; return (*this); }
+		rev_iterator				operator--(int) { rev_iterator aux(*this); ++it; return (aux); }
+		reve_iterator				&operator--() { ++it; return (*this); }
 		reference					operator*() { return (*--it); }
 		reference					operator[](difference_type nb) { return (it + (-nb - 1)); }
 		pointer						operator->() { return ((--it).operator->()); }
 		template<typename U1, typename U2>
-		friend bool					operator==(const reverse_iterator<U1> &it1, const reverse_iterator<U2> &it2) { return (it1.it == it2.it); }
+		friend bool					operator==(const rev_iterator<U1> &it1, const rev_iterator<U2> &it2) { return (it1.it == it2.it); }
 		template<typename U1, typename U2>
-		friend bool					operator!=(const reverse_iterator<U1> &it1, const reverse_iterator<U2> &it2) { return (it1.it != it2.it); }
+		friend bool					operator!=(const rev_iterator<U1> &it1, const rev_iterator<U2> &it2) { return (it1.it != it2.it); }
 		template<typename U1, typename U2>
-		friend bool					operator<(const reverse_iterator<U1> &it1, const reverse_iterator<U2> &it2) { return (it1.it < it2.it); }
+		friend bool					operator<(const rev_iterator<U1> &it1, const rev_iterator<U2> &it2) { return (it1.it < it2.it); }
 		template<typename U1, typename U2>
-		friend bool					operator<=(const reverse_iterator<U1> &it1, const reverse_iterator<U2> &it2) { return (it1.it <= it2.it); }
+		friend bool					operator<=(const rev_iterator<U1> &it1, const rev_iterator<U2> &it2) { return (it1.it <= it2.it); }
 		template<typename U1, typename U2>
-		friend bool					operator>(const reverse_iterator<U1> &it1, const reverse_iterator<U2> &it2) { return (it1.it > it2.it); }
+		friend bool					operator>(const rev_iterator<U1> &it1, const rev_iterator<U2> &it2) { return (it1.it > it2.it); }
 		template<typename U1, typename U2>
-		friend bool					operator>=(const reverse_iterator<U1> &it1, const reverse_iterator<U2> &it2) { return (it1.it >= it2.it); }
+		friend bool					operator>=(const rev_iterator<U1> &it1, const rev_iterator<U2> &it2) { return (it1.it >= it2.it); }
 		
 		iterator_type				get_iterator() { return (it); }
 	};
