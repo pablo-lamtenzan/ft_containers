@@ -6,7 +6,7 @@
 /*   By: plamtenz <plamtenz@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/27 20:11:34 by plamtenz          #+#    #+#             */
-/*   Updated: 2020/09/27 20:25:41 by plamtenz         ###   ########.fr       */
+/*   Updated: 2020/09/27 20:26:36 by plamtenz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include "Vector.hpp"
 
 /* std::queue is a container adapter, thas mean it gives the functionality of a queue
-	of other containers */
+	to other containers */
 
 namespace ft {
 	
