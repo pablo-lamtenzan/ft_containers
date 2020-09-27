@@ -6,7 +6,7 @@
 /*   By: plamtenz <plamtenz@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/27 12:33:31 by plamtenz          #+#    #+#             */
-/*   Updated: 2020/09/27 17:34:18 by plamtenz         ###   ########.fr       */
+/*   Updated: 2020/09/27 19:11:20 by plamtenz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ namespace ft {
 			vec_it() : vec_iterator<I, false> () {}
 			vec_it(const vec_iterator<I, false> &it) : vec_iterator<I, is_accesor>(it.curr) {}
 			vec_it(const vec_it<I, is_accesor> &target) : vec_iterator<I, is_accesor>(target) {}
-			// using operator= <-WHY???
+			// using operator= 
 			~vec_iterator() {}
 		};
 
@@ -87,7 +87,7 @@ namespace ft {
 			vec_rev_it() : reverse_iterator<Iterator>() {}
 			vec_rev_it(const rev_iterator<not_const_iterator> &it) : rev_iterator<Iterator>(it) {}
 			vec_rev_it(const vec_rev_it<Iterator> &target) : rev_iterator<Iterator>(target.it) {}
-			// using op= WHY
+			// using op=
 			~vec_rev_it() {}
 		};
 
@@ -119,8 +119,8 @@ namespace ft {
 	
 		/* Resizes the array if there isn't enought space */
 		void				array_resize(int32_t new_total_size) {
-			if (new_total_size > capacity)
-				array_reserve(new_total_size);
+			if (new_total_size >= capacity)
+				array_reserve(capacity ? new_total_size * 2 : 1);
 			total_size = new_total_size;
 		}
 		
@@ -265,22 +265,148 @@ namespace ft {
 
 	/* Iterators */
 		/* begin */
+	template<typename T, class Alloc>
+	typename vector<T, Alloc>::iterator					vector<T, Alloc>::begin() { return (iterator(objs)); }
+	template<typename T, class Alloc>
+	typename vector<T, Alloc>::const_iterator			vector<T, Alloc>::begin() const { return (const_iterator(objs)); }
 	
 		/* end */
+	template<typename T, class Alloc>
+	typename vector<T, Alloc>::iterator					vector<T, Alloc>::end() { return (iterator(objs + total_size)); }
+	template<typename T, class Alloc>
+	typename vector<T, Alloc>::const_iterator			vector<T, Alloc>::begin() const { return (const_iterator(objs + total_size)); }
+
 		/* rbegin */
+	template<typename T, class Alloc>
+	typename vector<T, Alloc>::reverse_iterator			vector<T, Alloc>::rbegin() { return (reverse_iterator(end())); }
+	template<typename T, class Alloc>
+	typename vector<T, Alloc>::const_reverse_iterator	vector<T, Alloc>::rbegin() const { return (const_reverse_iterator(end())); }
+	
 		/* rend */
+	template<typename T, class Alloc>
+	typename vector<T, Alloc>::reverse_iterator			vector<T, Alloc>::rend() { return (reverse_iterator(begin())); }
+	template<typename T, class Alloc>
+	typename vector<T, Alloc>::const_reverse_iterator	vector<T, Alloc>::rend() { return (const_reverse_iterator(begin())); }
+	
 	/* Capacity */
 		/* empty */
+	template<typename T, class Alloc>
+	bool							vector<T, Alloc>::empty() const { return (!total_size); }
+	
 		/* size */
+	template<typename T, class Alloc>
+	typename vector<T, Alloc>::size_of_type		vector<T, Alloc>::size() const { return (total_size); }
+	
 		/* max_size */
+	template<typename T, class Alloc>
+	typename vector<T, Alloc>::size_of_type		vector<T, Alloc>::max_size() const
+	{
+		return (std::numeric_limits<size_of_type>::max() / sizeof(value_type));
+	}
 		/* reserve */
+	template<typename T, class Alloc>
+	void										vector<T, Alloc>::reserve(size_of_type new_cap)
+	{
+		if (new_cap > max_size())
+			throw std::bad_alloc(std::string("Error: trying to allocate more than containers max_size"));
+		array_reserve(new_cap);
+	}
 		/* capacity */
+	template<typename T, class Alloc>
+	typename vector<T, Alloc>::size_of_type		vector<T, Alloc>::capacity() const { return (capacity); }
+	
 	/* Modifiers */
 		/* clear */
+	template<typename T, class Alloc>
+	void										vector<T, Alloc>::clear()
+	{
+		while (total_size--)
+			memory.destroy(&at(objs + total_size));
+	}
 		/* insert */
+	template<typename T, class Alloc>
+	template<typename InputIt>
+	void										vector<T, Alloc>::insert(vector<T, Alloc>::iterator pos, InputIt first, InputIt last)
+	{
+		// do
+	}
+	template<typename T, class Alloc>
+	typename vector<T, Alloc>::iterator			vector<T, Alloc>::insert(iterator pos, const value_type &value)
+	{
+		// to do
+	}
+
+	template<typename T, class Alloc>
+	void										vector<T, Alloc>::insert(iterator pos, size_of_type count, const value_type &value)
+	{
+		// to do
+	}
+	
 		/* push_back */
+	template<typename T, class Alloc>
+	void										vector<T, Alloc>::push_back(const T &value)
+	{
+		array_resize(total_size);
+		memory.construct(objs + total_size++, value;
+	}
+	
 		/* pop_back */
+	template<typename T, class Alloc>
+	void										vector<T, Alloc>::pop_back() { total_size ? memory.destroy(objs + total_size-- - 1) : 0; }
+
 		/* resize */
+	template<typename T, class Alloc>
+	void										vector<T, Alloc>::resize(size_of_type count, value_type value)
+	{
+		// have i to do this definition of resize ??
+	}
+
 		/* swap */
+	template<typename T, class Alloc>
+	void										vector<T, Alloc>::swap(vector<T, Alloc> &other)
+	{
+		std::swap(objs, other.objs);
+		std::swap(capacity, other.capacity);
+		std::swap(total_size, other.total_size);
+	}
+	
 	/* Non-member functions */
+
+	/*
+	template<typename T, class Alloc>
+	T					&operator=(const vector<T, Alloc> &target)
+	{
+		uint32_t		remember = total_size;
+		clear();
+		memory.deallocate(objs, remember);
+		total_size = target.size;
+		capacity = target.capacity;
+		objs = other.objs;
+		for (uint32_t i(0) : i < total_size)
+			memory.construct(objs + i, target.at(i));
+		return (*this);
+	}
+	*/
+
+	template<typename T, class Alloc>
+	bool				operator==(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs)
+	{
+		for (uint32_t i(0) : i < lhs.size())
+			if (lsh[i] == rhs[i])
+				return (false);
+		return (lhs.size() == rhs.size());
+	}
+	template<typename T, class Alloc>
+	bool				operator!=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) { return (!(lhs == rhs)); }
+	template<typename T, class Alloc>
+	bool				operator<(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs)
+	{
+		// to do have to read about this
+	}
+	template<typename T, class Alloc>
+	bool				operator<=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) { return ((lhs == rhs) | (lhs < rhs)); }
+	template<typename T, class Alloc>
+	bool				operator>(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) { return (!(lhs <= rhs)); }
+	template<typename T, class Alloc>
+	bool				operator>=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) { return (!(lhs < rhs)); }
 }
