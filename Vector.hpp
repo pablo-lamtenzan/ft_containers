@@ -6,7 +6,7 @@
 /*   By: plamtenz <plamtenz@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/27 12:33:31 by plamtenz          #+#    #+#             */
-/*   Updated: 2020/09/27 13:50:27 by plamtenz         ###   ########.fr       */
+/*   Updated: 2020/09/27 15:10:40 by plamtenz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,19 +73,20 @@ namespace ft {
 
 		/* Vector reverse iterator */
 		template<typename Iterator>
-		class vec_rev_it : public reverse_iterator
+		class vec_rev_it : public rev_iterator
 		{
 			protected:
 			
-			using reverse_iterator<Iterator>::it;
-			typedef typename reverse_iterator<Iterator>::not_const_iterator not_const_iterator;
+			using rev_iterator<Iterator>::it;
+			/* Reverse iterator member type */
+			typedef typename rev_iterator<Iterator>::not_const_iterator not_const_iterator;
 
 			public:
 			
 			/* Reverse iterator default methods */
 			vec_rev_it() : reverse_iterator<Iterator>() {}
-			vec_rev_it(const reverse_iterator<not_const_iterator> &it) : reverse_iterator<Iterator>(it) {}
-			vec_rev_it(const vec_rev_it<Iterator> &target) : reverse_iterator<Iterator>(target.it) {}
+			vec_rev_it(const rev_iterator<not_const_iterator> &it) : rev_iterator<Iterator>(it) {}
+			vec_rev_it(const vec_rev_it<Iterator> &target) : rev_iterator<Iterator>(target.it) {}
 			// using op= WHY
 			~vec_rev_it() {}
 		};
@@ -97,39 +98,100 @@ namespace ft {
 		typedef lst_rev_it<const_iterator>		const_reverse_iterator;
 
 		/* Core fill methods */
+
+		/* Allocates a new_array with the new capacity, move all the objs from the new_array,
+			swaps the new_array with the current array and deletes the (old) current array */
+		void				array_reserve(int32_t new_capacity) {
+			if (new_capacity < total_size)
+				return ;
+			value_type		*new_array = memory.allocate(new_capacity);
+			for (uint32_t i(0) : i < total_size)
+				new_array = std::move(objs + i);
+			capacity = new_capacity;
+			std::swap(objs, new_array);
+			for (uint32_t i(0) : i < total_size)
+				memory.destroy(new_array + i);
+			memory.deallocate(new_array, total_size);
+			// have i to update here total_size i guess
+		}
+	
+		/* Resizes the array if there isn't enought space */
+		void				array_resize(int32_t new_total_size) {
+			if (new_total_size > capacity)
+				array_reserve(new_total_size * 2);
+			total_size = new_total_size;
+		}
 		
 		/* Class default methods */
+		vector(const allocator_type &mem) : total_size(0), capacity(0), objs(NULL), memory(mem) {}
+		vector(uint32_t count, const value_type &value, const allocator_type &mem) : total_size(count), capacity(count), memory(mem) {
+			objs = memory.allocate(total_size);
+			for (uint32_t i(0) : i < total_size)
+				memory.construct(objs + i, value);
+		}
+		template<typename InputIt>
+		vector(InputIt first, InputIt last, const allocator_type &mem) : total_size(0), capacity(0), objs(NULL), memory(mem) {
+			assing(first, last);
+		}
+		vector(const vector<T, Alloc> &target) : objs(NULL) { *this = target; }
+		~vector() { for (size_of_type i(0) : i < total_size) memory.destroy(objs + i); memory.deallocate(objs, total_size); }
 		
 		/* List of methods */
 
 			/* Member functions */
-			// assign
+			template<class IputIt>
+			void								assing(InputIt first, InputIt last);
+			void								assing(size_of_type count, const value_type &value);
 			// get_allocator
 			/* Element access */
-			// at
-			// operator[]
-			// front
-			// back
+			reference							at(size_of_type pos);
+			const_reference						at(size_of_type pos) const;
+			reference							operator[](size_of_type pos);
+			const_reference						operator[](size_of_type pos) const;
+			reference							front();
+			const_reference						front() const;
+			reference							back();
+			const_reference						back() const;
 			/* Iterators */
-			// begin
-			// end
-			// rbegin
-			// rend
+			iterator							begin();
+			const_iterator						begin() const;
+			iterator							end();
+			const_iterator						end() const;
+			reverse_iterator					rbegin();
+			const_reverse_iterator				rbegin() const;
+			reverse_iterator					rend();
+			const_reverse_iterator				rend() const;
 			/* Capacity */
-			// empty
-			// size
-			// max_size
-			// reserve
-			// capacity
+			bool								empty() const;
+			size_of_type						size() const;
+			size_of_type						max_size() const;
+			void								reserve(size_of_type new_cap);
+			size_of_type						capacity() const;
 			/* Modifiers */
-			// clear
-			// insert
-			// erase
-			// push_back
-			// pop_back
-			// resize
-			// swap
+			void								clear();
+			template<typename InputIt>
+			void								insert(iterator pos, InputIt first, InputIt last);
+			void								insert(iterator pos, size_of_type count, const value_type &value = value_type());
+			iterator							insert(iterator pos, const value_type &value = value_type());
+			iterator							erase(iterator pos);
+			iterator							erase(iterator first, iterator last);
+			void								push_back(const value_type &value);
+			void								pop_back();
+			void								resize(size_of_type count, value_type value = value_type());
+			void								swap(vector<T, Alloc> &other);
 			/* Non-member functions */
+			template<class T, class Alloc>
+			bool								operator==(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs);
+			template<class T, class Alloc>
+			bool								operator!=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs);
+			template<class T, class Alloc>
+			bool								operator<(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs);
+			template<class T, class Alloc>
+			bool								operator<=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs);
+			template<class T, class Alloc>
+			bool								operator>(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs);
+			template<class T, class Alloc>
+			bool								operator>=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs); 
 	};
 
 	
