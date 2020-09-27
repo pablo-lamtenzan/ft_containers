@@ -6,7 +6,7 @@
 /*   By: plamtenz <plamtenz@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/27 19:37:10 by plamtenz          #+#    #+#             */
-/*   Updated: 2020/09/27 20:08:38 by plamtenz         ###   ########.fr       */
+/*   Updated: 2020/09/27 20:17:04 by plamtenz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@ namespace ft {
 		typedef	Container		container_type;
 		typedef T				value_type;
 		typedef const T			const_value_type;
+		typedef T&				reference;
+		typedef const T&		const_reference;
 		typedef std::size_t		size_of_type;
 
 		protected:
@@ -42,8 +44,8 @@ namespace ft {
 		// op =
 		
 		/* Element access */
-		value_type			top() { return (container.back()); }
-		const_value_type	top() const { return (container.back()); }
+		reference			top() { return (container.back()); }
+		const_reference		top() const { return (container.back()); }
 	
 		/* Capacity */
 		bool				empty() const { return (container.empty())); }
