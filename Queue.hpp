@@ -6,7 +6,7 @@
 /*   By: plamtenz <plamtenz@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/27 20:11:34 by plamtenz          #+#    #+#             */
-/*   Updated: 2020/09/27 20:20:41 by plamtenz         ###   ########.fr       */
+/*   Updated: 2020/09/27 20:24:25 by plamtenz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include "List.hpp"
 #include "Vector.hpp"
 
-/* std::stack is a container adapter, thas mean it gives the functionality of a stack
+/* std::queue is a container adapter, thas mean it gives the functionality of a stack
 	of other containers */
 
 namespace ft {
