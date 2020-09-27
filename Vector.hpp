@@ -6,7 +6,7 @@
 /*   By: plamtenz <plamtenz@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/27 12:33:31 by plamtenz          #+#    #+#             */
-/*   Updated: 2020/09/27 15:10:40 by plamtenz         ###   ########.fr       */
+/*   Updated: 2020/09/27 17:34:18 by plamtenz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,6 +92,8 @@ namespace ft {
 		};
 
 		/* Iterators class members types */
+		public :
+
 		typedef lst_it<T, false>				iterator;
 		typedef lst_it<T, true>					const_iterator;
 		typedef lst_rev_it<iterator>			reverse_iterator;
@@ -118,7 +120,7 @@ namespace ft {
 		/* Resizes the array if there isn't enought space */
 		void				array_resize(int32_t new_total_size) {
 			if (new_total_size > capacity)
-				array_reserve(new_total_size * 2);
+				array_reserve(new_total_size);
 			total_size = new_total_size;
 		}
 		
@@ -139,60 +141,146 @@ namespace ft {
 		/* List of methods */
 
 			/* Member functions */
-			template<class IputIt>
-			void								assing(InputIt first, InputIt last);
-			void								assing(size_of_type count, const value_type &value);
-			// get_allocator
+		template<class InputIt>
+		void								assign(InputIt first, InputIt last);
+		void								assign(size_of_type count, const value_type &value);
+		// get_allocator
 			/* Element access */
-			reference							at(size_of_type pos);
-			const_reference						at(size_of_type pos) const;
-			reference							operator[](size_of_type pos);
-			const_reference						operator[](size_of_type pos) const;
-			reference							front();
-			const_reference						front() const;
-			reference							back();
-			const_reference						back() const;
+		reference							at(size_of_type pos);
+		const_reference						at(size_of_type pos) const;
+		reference							operator[](size_of_type pos);
+		const_reference						operator[](size_of_type pos) const;
+		reference							front();
+		const_reference						front() const;
+		reference							back();
+		const_reference						back() const;
 			/* Iterators */
-			iterator							begin();
-			const_iterator						begin() const;
-			iterator							end();
-			const_iterator						end() const;
-			reverse_iterator					rbegin();
-			const_reverse_iterator				rbegin() const;
-			reverse_iterator					rend();
-			const_reverse_iterator				rend() const;
+		iterator							begin();
+		const_iterator						begin() const;
+		iterator							end();
+		const_iterator						end() const;
+		reverse_iterator					rbegin();
+		const_reverse_iterator				rbegin() const;
+		reverse_iterator					rend();
+		const_reverse_iterator				rend() const;
 			/* Capacity */
-			bool								empty() const;
-			size_of_type						size() const;
-			size_of_type						max_size() const;
-			void								reserve(size_of_type new_cap);
-			size_of_type						capacity() const;
+		bool								empty() const;
+		size_of_type						size() const;
+		size_of_type						max_size() const;
+		void								reserve(size_of_type new_cap);
+		size_of_type						capacity() const;
 			/* Modifiers */
-			void								clear();
-			template<typename InputIt>
-			void								insert(iterator pos, InputIt first, InputIt last);
-			void								insert(iterator pos, size_of_type count, const value_type &value = value_type());
-			iterator							insert(iterator pos, const value_type &value = value_type());
-			iterator							erase(iterator pos);
-			iterator							erase(iterator first, iterator last);
-			void								push_back(const value_type &value);
-			void								pop_back();
-			void								resize(size_of_type count, value_type value = value_type());
-			void								swap(vector<T, Alloc> &other);
+		void								clear();
+		template<typename InputIt>
+		void								insert(iterator pos, InputIt first, InputIt last);
+		void								insert(iterator pos, size_of_type count, const value_type &value = value_type());
+		iterator							insert(iterator pos, const value_type &value = value_type());
+		iterator							erase(iterator pos);
+		iterator							erase(iterator first, iterator last);
+		void								push_back(const value_type &value);
+		void								pop_back();
+		void								resize(size_of_type count, value_type value = value_type());
+		void								swap(vector<T, Alloc> &other);
 			/* Non-member functions */
-			template<class T, class Alloc>
-			bool								operator==(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs);
-			template<class T, class Alloc>
-			bool								operator!=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs);
-			template<class T, class Alloc>
-			bool								operator<(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs);
-			template<class T, class Alloc>
-			bool								operator<=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs);
-			template<class T, class Alloc>
-			bool								operator>(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs);
-			template<class T, class Alloc>
-			bool								operator>=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs); 
+		template<class T, class Alloc>
+		bool								operator==(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs);
+		template<class T, class Alloc>
+		bool								operator!=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs);
+		template<class T, class Alloc>
+		bool								operator<(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs);
+		template<class T, class Alloc>
+		bool								operator<=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs);
+		template<class T, class Alloc>
+		bool								operator>(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs);
+		template<class T, class Alloc>
+		bool								operator>=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs); 
 	};
-
+	/* Implementation fo class methods */
 	
+	/* Member functions */
+		/* assign */
+	template<typename T, class Alloc>
+	template<class InputIt>
+	void			vector<T, Alloc>::assign(InputIt first, InputIt last)
+	{
+		int32_t count(0);
+		for (InputIt i(first) : i != last)
+			count++;
+		if (count > capacity)
+			array_reserve(count);
+		for (size_of_type i(0) : i < total_size)
+			memory.destroy(&at(i + 1));
+		total_size = 0;
+		for (InputIt i(first) : I != last) // or insert could be better than loop
+			push_back(*it);
+	}
+	template<typename T, class Alloc>
+	void			vector<T, Alloc>::assign(size_of_type count, const value_type &value)
+	{
+		if (size < 0)
+			return ; // throw an exeption
+		if (count > capacity)
+			array_reserve(count);
+		for (size_of_type i(0) : i < total_size)
+			memory.destroy(&at(i + 1));
+		total_size = 0;
+		for (InputIt i(first) : I < count) // or insert could be better than loop
+			push_back(*it);
+	}
+		/* get_allocator */
+
+	/* Element access methods */
+		/* at */
+	template<typename T, class Alloc>
+	T						&vector<T, Alloc>::at(size_of_type pos)
+	{
+		if (!(pos < size()))
+			throw std::out_of_range(std::string("Error: out of bounds acess"));
+		return (objs[pos]);
+	}
+	template<typename T, class Alloc>
+	const T					&vector<T, Alloc>::at(size_of_type pos) const
+	{
+		if (!(pos < size()))
+			throw std::out_of_range(std::string("Error: out of bounds"));
+		return (objs[pos]);
+	}
+		/* operator[]*/
+	template<typename T, class Alloc>
+	T						&vector<T, Alloc>::operator[](size_of_type pos) { return (objs[pos]); }
+	template<typename T, class Alloc>
+	const T					&vector<T, Alloc>::operator[](size_of_type pos) const { return (objs[pos]); }
+
+		/* front */
+	template<typename T, class Alloc>
+	T						&vector<T, Alloc>::front() { return (objs[0]); }
+	template<typename T, class Alloc>
+	const T					&vector<T, Alloc>::front() const { return (objs[0]); }
+
+		/* back */
+	template<typename T, class Alloc>
+	T						&vector<T, Alloc>::back() { return (objs[total_size -1]); }
+	template<typename T, class Alloc>
+	const T					&vector<T, Alloc>::back() const { return (objs[total_size - 1]); }
+
+	/* Iterators */
+		/* begin */
+	
+		/* end */
+		/* rbegin */
+		/* rend */
+	/* Capacity */
+		/* empty */
+		/* size */
+		/* max_size */
+		/* reserve */
+		/* capacity */
+	/* Modifiers */
+		/* clear */
+		/* insert */
+		/* push_back */
+		/* pop_back */
+		/* resize */
+		/* swap */
+	/* Non-member functions */
 }
