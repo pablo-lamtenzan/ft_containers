@@ -6,7 +6,7 @@
 /*   By: plamtenz <plamtenz@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/25 21:41:43 by plamtenz          #+#    #+#             */
-/*   Updated: 2020/09/26 22:09:13 by plamtenz         ###   ########.fr       */
+/*   Updated: 2020/09/29 14:37:16 by plamtenz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,54 +51,92 @@ namespace {
 		Node							*tail;
 		Alloc							memory;
 
+		/* Node list definition */
+		template <typename Object>
+		struct Node
+		{
+			Object		data;
+			Node		*prev;
+			Node		*next;
+			Node(const Object &d = Object(), Node *p = NULL, Node *n = NULL) : data(d), prev(p), next(n) {}	
+		};
+
 		public :
 		
 		/* Implementation of list bidirectional iterator */
-		template <typename T, bool is_accesor>
-		class lst_it : public lst_iterator<T, is_accesor>
+		template <typename I, bool is_accesor>
+			template<typename T, bool is_accesor>
+		class lst_iterator
 		{
-			protected:
-			
-			using lst_iterator<T, is_accesor>::curr;
+			public:
 
-			public :
+			/* Use the std methods developped in aux.hpp for define if T is const or not const */
+			typedef typename remove_const<T>::obj_type										not_const_type;	
+			typedef lst_iterator<not_const_type, false>										not_const_iterator;
+			typedef typename auto_const<is_accesor, Node<T>*, const Node<T>*>::obj_type		node_pointer;
+			typedef T																		value_type;
+			typedef typename auto_const<is_accesor, T*, const T*>::obj_type					pointer;
+			typedef typename auto_const<is_accesor, T&, const T&>::obj_type					reference;
+			typedef ::std::ptrdiff_t														difference_type;
+			typedef std::bidirectional_iterator_tag											iterator_category;
 
-			typedef T															value_type;
-			typedef typename auto_const<is_accesor, T*, const T*>::obj_type		pointer;
-			typedef typename auto_const<is_accesor, T&, const T&>::obj_type		reference;
-			typedef typename remove_const<T>::obj_type							not_const_type;
-			typedef lst_it<not_const_type, false>								not_const_iterator;
-			typename std::ptrdiff_t												difference_type;
-			typedef std::random_access_iterator_tag								iterator_category;
-			
-			lst_it() : lst_iterator<T, is_accesor>() {}
-			lst_it(const lst_iterator<not_const_type, false> &it) : lst_iterator<T, is_accesor>(it.curr) {}
-			lst_it(const lst_it<not_const_type, false> &target) : lst_iterator<T, is_accesor>(target) {}
-			// op =
-			~lst_it() {}									
+			/* Node ptr use for iterate in the list */
+			Node<not_const_type>															*curr;
+		
+			/* Default class methods: constructors, copy constructor and destuctor */
+			lst_iterator() : curr(NULL) {}
+			lst_iterator(node_pointer ptr) : curr(ptr) {}
+			lst_iterator(const not_const_iterator &target) {
+			not_const_iterator copy = target;
+			std::swap(curr, copy.curr); // for destroy the old curr (when it gonna be out of the exec scope it'll be destroyed)
+			return (*this);
+			~lst_iterator() {}
+		
+			/* Implementation of list iterator operators */
+			lst_iterator		&operator=(const not_const_iterator &target) { curr = target.curr; return (*this); }
+			lst_iterator		operator++(int) { lst_iterator aux(curr); operator++(); return (aux); }
+			lst_iterator		&operator++() { curr = curr ? curr->next : curr; return (*this); }
+			lst_iterator		operator--(int) { lst_iterator aux(curr); operator--(); return (aux); }
+			lst_iterator		&operator--() { curr = curr ? curr->prev : curr; return (*this); }
+			reference			operator*() {
+				if (curr)
+					return (curr->data);
+				throw::std::out_of_range(std::string("Error: null ptr hasn't address to deference"));
+			}
+			bool				operator==(node_pointer n1, node_pointer n2) { return (n1 == n2); }
+			bool				operator!=(node_pointer n1, node_pointer n2) { return (n1 != n2); }
+			// need to use friend function cause they need to acces curr while been called out of the class (cogical if i need 2 classes for cmp) 
+			template<typename T1, typename T2, bool is_accesor1, bool is_accesor2>
+			friend bool			operator==(const lst_iterator<T1, is_accesor1> &it1, const lst_iterator<T2, is_accesor2> &it2) {
+				return (it1.curr == it2.curr);
+			}
+			template<typename T1, typename T2, bool is_accesor1, bool is_accesor2>
+			friend bool			operator!=(const lst_iterator<T1, is_accesor1> &it1, const lst_iterator<T2, is_accesor2> &it2) {
+				return (it1.curr != it2.curr);
+			}
 		};
 
 		/* Implementaion of list reverse iterator */
 		template<typename Iterator>
-		class lst_rev_it : public reverse_iterator<Iterator>
+		class lst_rev_it : public rev_iterator<Iterator>
 		{
 			protected:
 
-			using	reverse_iterator<Iterator>::it;
+			using	rev_iterator<Iterator>::it;
 
 			public:
 
-			typedef typename reverse_iterators<Iterator>::not_const_iterator	not_const_iterator;
+			typedef typename rev_iterator<Iterator>::not_const_iterator	not_const_iterator;
 			
 			lst_rev_it() : reverse_iterator<Iterator>() {}
-			lst_rev_it(const reverse_iterator<not_const_iterator> &it) : reverse_iterator<Iterator>(it) {}
-			lst_rev_it(const lst_rev_it<Iterator> &target) : reverse_iterator<Iterator>(target.it) {}
+			lst_rev_it(const rev_iterator<not_const_iterator> &it) : rev_iterator<Iterator>(it) {}
+			lst_rev_it(const lst_rev_it<Iterator> &target) : rev_iterator<Iterator>(target.it) {}
 			// op = ¿?
 			~lst_rev_it() {}
 		};
 
-		typedef lst_it<T, false>			iterator;
-		typedef lst_it<T, true>				const_iterator;
+		typedef lst_iterator<T, false>		iterator;
+		typedef lst_iterator<T, true>		const_iterator;
 		typedef lst_rev_it<iterator>		reverse_iterator;
 		typedef lst_rev_it<const_iterator>	const_reverse_iterator;
 
@@ -191,7 +229,7 @@ namespace {
 			node_mem(memory).deallocate(tail, 1);
 		}
 
-		/* Default methods */
+		/* Class default methods */
 		public :
 
 		list(const allocator_type &mem) : memory(mem) total_size(0) { init(); }
