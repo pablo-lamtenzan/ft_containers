@@ -6,7 +6,7 @@
 /*   By: plamtenz <plamtenz@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/27 21:05:28 by plamtenz          #+#    #+#             */
-/*   Updated: 2020/09/29 12:43:20 by plamtenz         ###   ########.fr       */
+/*   Updated: 2020/09/29 13:07:15 by plamtenz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -381,8 +381,13 @@ namespace ft {
 			{
 				action(min->key, min->data);
 				/* if has a right child iterates the further possible to the right */
+<<<<<<< HEAD
 				if (min->child_right != nil)
 					min = rtb_minimum(min->child_right);
+=======
+				if (min->children_right != nil)
+					min = rtb_minimum(min->children_right);
+>>>>>>> 0f0c13e000857b2412d226b9e7d9f36d6045a4f1
 				else
 				{
 					/* if "min" doesn't have a right child
