@@ -6,11 +6,15 @@
 /*   By: plamtenz <plamtenz@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/27 21:05:28 by plamtenz          #+#    #+#             */
-/*   Updated: 2020/09/28 18:39:58 by plamtenz         ###   ########.fr       */
+/*   Updated: 2020/09/29 12:43:20 by plamtenz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
+
+// to do 
+// change all children by child omg
+// map iterator into class map
 
 #include "ReverseIterators.hpp"
 #include "Stack.hpp"
@@ -46,8 +50,9 @@ namespace ft {
 			protected:
 
 			/* Protected member objects */
-			key_compare		comp;
-			uint32_t		size;
+			key_compare					comp;
+			uint32_t					total_size;
+			Alloc						memory;
 
 			public:
 
@@ -131,56 +136,81 @@ namespace ft {
 
 		/* fill methods */
 
+		/* Returns true if "target" is the right child */
+		bool								rbt_is_right_child(Node *target) { return (target == target->parent_node->child_right); }
+		/* Returns true if "target" is the left child */
+		bool								rbt_is_left_child(Node *target) { return (target == target->parent_node->child_left); }
+		/* Returns a pointed reference (void *&ptr ~= void **) to the left child of "l" */
+		static Node							*&rbt_node_left_child(Node *l) { return (l->child_left); }
+		/* Returns a pointed reference (void *&ptr ~= void **) to the right child of "r" */
+		static Node							*&rbt_node_right_child(Node *r) { return (r->child_right); }
+		/* Returns true if the rbt is empty */
 		bool								rbt_empty() const { return (root == nil); }
 		// ~RBTree()
 
-		void								rbt_transplant(Node *lhs, Node *rhs) {
-			if (lhs->parent_node == nil)
-				root = rhs;
-			else if (rbt_is_left_child(lhs))
-				lhs->parent_node->children_left = rhs;
+		/* Puts src in dest and uptades the parent node pointers and itselfs pointer */
+		void								rbt_move(Node *dest, Node *src) {
+			if (dest->parent_node == nil)
+				root = src;
+			else if (rbt_is_left_child(dest))
+				dest->parent_node->child_left = src;
 			else
-				lhs->parent_node->children_right = rhs;
-			rhs->parent_node = lhs->parent_node;
+				dest->parent_node->child_right = src;
+			dest->parent_node = src->parent_node;
 		}
 		
-		void								rbt_delete_node(Node *node) {
-			// to do
-		}
-		
+		/* destructs and deallocate recursivelly starting from node and
+			iterating over the childrens */
 		void								rbt_destroy(Node *node) {
 			if (node != nil)
 			{
-				rbt_destroy(node->children_left);
-				rbt_destroy(node->children_right);
-				// mem deallocation using the allocator
+				rbt_destroy(node->child_left);
+				rbt_destroy(node->child_right);
+				node_mem(memory).destroy(node);
+				node_mem(memory).deallocate(node, 1);
 			}
 		}
-		// RbTREE()
+
+		// RbTREE() do this in map constructor
 		// RBTREE()
+
+		/* Returns the current size of the rbt */
 		uint32_t							rbt_size() const { return (size); }
-		template<typename Children1, typename Children2>
-		Node								*rbt_generic_rotatation(Node * x, Children1 ch1, Children2 ch2) {
-			// to do
-		}
-		bool								rbt_generic_add(key_type &key, mapped_type &data) {
-			// to do
-		}
-		bool								rbt_add(const key_type &key, const mapped_type &data) {
-			return (rbt_generic_add(const_cast<key_type&>(key), const_cast<mapped_type&>(data)));
+
+		/* Generic rotation of rbt algorithm */
+		template<typename Child1, typename Child2>
+		Node								*rbt_generic_rotatation(Node *node, Child1 ch1, Child2 ch2) {
+			Node *aux = ch2(node);
+			ch2(node) = ch1(aux);
+			
+			if (ch1(aux) != nil)
+				ch1(aux)->parent_node = node;
+			if (node->parent_node == nil)
+				root = aux;
+			else if (node == ch1(node->parent_node))
+				ch1(node->parent_node) = aux;
+			else
+				ch2(node->parent_node) = aux;
+			aux->parent_node = node->parent_node;
+			ch1(aux) = target_node;
+			return (node->parent_node = aux);
 		}
 		
+		/* Iterates node the most possible to the left of the rbt */
 		Node								*rtb_minimum(Node *node) const {
-			while (node->children_left != nil)
-				node = node->children_left;
+			while (node->child_left != nil)
+				node = node->child_left;
 			return (node);
 		}
 
+		/* Iterates node the most possible to the right of the rbt */
 		Node								*rbt_maximum(Node *node) const {
-			while (node->children_right != nil)
-				node = node->children_right;
+			while (node->child_right != nil)
+				node = node->child_right;
 			return (node);
 		}
+
+		/* Returns the pair in the minimum (top left) node */
 		std::pair<key_type, mapped_type>	rbt_get_min() const {
 			if (empty())
 				throw std::underflow_error("Error: underflow detected");
@@ -188,6 +218,7 @@ namespace ft {
 			return (std::pair<key_type, mapped_type>(min->key, min->data));
 		}
 		
+		/* Returns the pair in the maximum (top rigt) node */
 		std::pair<key_type, mapped_type>	rbt_get_max() const {
 			if (empty())
 				throw std::underflow_error("Error: underflow detected");
@@ -195,115 +226,167 @@ namespace ft {
 			return (std::pair<key_type, mapped_type>(max->key, max->data));
 		}
 		
+		/* Search in the rbt using the key given as parameter adn return the result */
 		Node								*rbt_find_node(const key_type &key) const {
-			Node *node = root;
-			while (node != nil)
+			Node *result = root;
+			while (result != nil)
 			{
-				if (comp(key, node->key))
-					node = node->children_left;
-				else if (comp(node->key, key))
-					node = node->children_right;
+				if (comp(key, result->key))
+					result = result->child_left;
+				else if (comp(result->key, key))
+					result = result->child_right;
 				else
-					return (node);
+					return (result);
 			}
-			return node;
+			return result;
 		}
 		
+		
+		/* Search in the rbt and returns true if the found result is equal to the given one as parameter */
 		bool								rbt_get(const key_type &key, mapped_type &result) {
-			Node *found = rbt_find(key); // mmm
+			Node *found = rbt_find_node(key);
 			return (found ? (result = found->data ? true : true) : false);
 		}
-		Node								*create_node(key_type key, mapped_type data) {
-			// to do
+
+		/* Inits, constructs and allocates a new node, returns a pointer to the new node. */
+		Node								*create_node(key_type &&key, mapped_type &&data) {
+			Node *new_node(std::forward<Key> key, std::forward<T> key);
+			node_mem(memory).construct(new_node);
+			node_mem(memory).allocate(1);
+			return (new_node);
 		}
-		
-		Node								*bst_add_recursive(key_type &key, mapped_type &data, Node *parent, Node *node) {
-			if (node == nil)
+
+		/* Add a new node allocating it in the tail of one of the branches. It uses the key given as parameter for sellect the destination branch */
+		Node								*bst_add_recursive(key_type &&key, mapped_type &&data, Node *parent, Node **new_node) {
+			if (*new_node == nil)
 			{
-				// create node
-				node->parent_node = parent;
-				size++;
-				return (node);
+				*new_node = create_node(std::forward<Key>(key), std::forward<T>(data));
+				(*new_node)->parent_node = parent;
+				total_size++;
+				return (*new_node);
 			}
-			else if (comp(key, node->key))
-				return (rbt_add_recursive(key, data, node, node->children_left));
-			else if (comp(node->key, key))
-				return (rbt_add_recursive(key, data, node, node->children_right));
+			else if (comp(key, (*new_node)->key))
+				return (rbt_add_recursive(key, data, new_node, (*new_node)->child_left));
+			else if (comp((*new_node)->key, key))
+				return (rbt_add_recursive(key, data, new_node, (*new_node)->child_right));
 			else
 				return (NULL);
 		}
-		
-		Node								*bst_add(key_type &key, mapped_type &data) {
-			Node *node = root;
+		/* Add a new node allocating it in the tail of one of the branches. It uses the key given as parameter for sellect the destination branch */
+		Node								*bst_add(key_type  &&key, mapped_type &&data) {
+			Node *aux = root;
 			Node *parent = nil;
 
-			while (node != nil)
+			/* Searchs for the parent node */
+			while (aux != nil)
 			{
-				parent = node;
-				if (comp(node->key, key))
-					node = node->children_right;
-				else if (comp(key, node->key))
-					node = node->children_left;
+				parent = aux;
+				if (comp(aux->key, key))
+					aux = aux->child_right;
+				else if (comp(key, aux->key))
+					aux = aux->child_left;
 				else
 					return (NULL);
 			}
-			
+			/* Allocates and search for destination branch  */
 			Node *new_node = create_node(std::forward<key_type>(key), std::forward<mapped_type>(data));
 			if (root == nil)
 				root = new_node;
 			else if (comp(parent->key, key))
-				parent->children_right = new_node;
+				parent->child_right = new_node;
 			else
-				parent->children_left = new_node;
+				parent->child_left = new_node;
 			new_node->parent_node = parent;
-			size++;
+			total_size++;
 			return (new_node);
 		}
 		
-		template<typename Children1, typename Children2>
-		void								rbt_generic_fixed_add(Node &node, Children1 ch1, Children2 ch2) {
-			Node *uncle = ch2(node->parent_node->parent_node);
+		/* Add new node using the red blac tree insertion algorithm (only used if adding a new node will broke the rbt rules) 
+			Child1 Child2 are the typename of 2 function pointers. Each function returns a child but the functions ptrs can be
+			called in reverse order depending of the parent node color in "rbt_fixed_add", */
+		template<typename Child1, typename Child2>
+		void								rbt_generic_fixed_add(Node **new_node, Child1 ch1, Child2 ch2) {
+			Node *uncle = ch2((*new_node)->parent_node->parent_node);
+			/* If the uncle node is red, "new_node" will be inserted as the parent of "uncle" node */
 			if (uncle->color & RED)
-				rbt_insert_move_up(node, uncle);
+				rbt_insert_move_up(new_node, uncle);
 			else
 			{
-				if (node == ch2(node->parent_node))
-					rbt_generic_rotatation(node = node->parent_node, ch1, ch2);
-				node->parent_node->parent_node->color |= RED;
-				rbt_generic_rotatation(node->parent_node->parent_node, ch1, ch2)->color &= BLACK;
+				/* if "new node" is the right branch of his  parent, rotate putting "new_node" in the parent address */
+				if (*new_node == ch2((*new_node)->parent_node))
+					rbt_generic_rotatation(*new_node = (*new_node)->parent_node, ch1, ch2);
+				/* The grand parent must be red now */
+				(*new_node)->parent_node->parent_node->color |= RED;
+				/* Rotate current grand parent node */
+				rbt_generic_rotatation((*new_node)->parent_node->parent_node, ch1, ch2)->color &= BLACK;
 			}
 		}
-		// is_left_child
-		void								rbt_fixed_add(Node *node) { 
-			while (node->parent_node->color & RED)
+
+		/* Calls generic insertion algorith, swiching parameter depends of the parent node color */
+		void								rbt_fixed_add(Node *new_node) { 
+			while (new_node->parent_node->color & RED)
 			{
-				if(rbt_is_left_child(node->parent_node))
-					rbt_generic_fixed_add(node, node->children_left, node->children_right);
-					// check the previous line
+				if(rbt_is_left_child(new_node->parent_node))
+					rbt_generic_fixed_add(&new_node, rbt_node_left_child , tbt_node_right_child);
 				else
-					rbt_generic_fixed_add(node, node->children_right, node->children_left);
-					// check the previous line
+					rbt_generic_fixed_add(&new_node, rbt_node_right_child, rbt_node_left_child);
 			}
 			root->color &= BLACK;
 		}
 
-		void								rbt_insert_move_up(Node &node, Node &uncle) {
-			node->parent_node->parent_node->color |= RED;
-			uncle->color &= BLACK;
-			node->parent_node &= BLACK;
-			node = node->parent_node->parent_node;
+		/* Adds a new element in rbt using the key, returns true on success */
+		bool								rbt_generic_add(key_type &&key, mapped_type &&data) {
+			Node *new_node = bst_add_recursive(std::forward<Key>(key), std::forward<T>::(data), nil, root);
+			if (new_node)
+				rbt_fixed_add(new_node);
+			return (new_node);
 		}
 
+		/* Adds a new element in rbt using the key, returns true on success */
+		bool								rbt_add(const key_type &key, const mapped_type &data) {
+			return (rbt_generic_add(const_cast<key_type&>(key), const_cast<mapped_type&>(data)));
+		}
+
+		/* Adds a new element in rbt using the key, returns true on success */
+		bool								rbt_add(const key_type &&key, const mapped_type &data) {
+			return (rbt_generic_add(std::move(key), const_cast<mapped_type&>(data)));
+		}
+
+		/* Adds a new element in rbt using the key, returns true on success */
+		bool								rbt_add(const key_type &key, const mapped_type &&data) {
+			return (rbt_generic_add(const_cast<key_type&>(key), std::move(data)));
+		}
+
+		/* Adds a new element in rbt using the key, returns true on success */
+		bool								rbt_add(const key_type &&key, const mapped_type &&data) {
+			return (rbt_generic_add(std::move(key), std::move(data)));
+		}
+
+		/* Inserts a "insert_node" upstairs his uncle, uptading colors (of course) */
+		void								rbt_insert_move_up(Node **insert_node, Node &uncle) {
+			(*insert_node)->parent_node->parent_node->color |= RED;
+			uncle->color &= BLACK;
+			(*insert_node)->parent_node &= BLACK;
+			*insert_node = (*insert_node)->parent_node->parent_node;
+		}
+
+		/* Iterates aplicating "action" into all the nodes of the path. 
+			The iteration is donne left to right. */
 		template<typename Action>
 		void								rbt_iter_in_order_walk(Node *node, Action action) {
+			/* Iterates the further possible to the left starting in node */
 			Node *min = rtb_minimum(node);
+			/* end of the iteration */
 			while (min != node->parent_node)
 			{
 				action(min->key, min->data);
-				if (min->children_right != nil)
-					min = rtb_minimum(min->children_right);
+				/* if has a right child iterates the further possible to the right */
+				if (min->child_right != nil)
+					min = rtb_minimum(min->child_right);
 				else
 				{
+					/* if "min" doesn't have a right child
+					and isn't orphan or the left child iterates back to the parent */
 					while (min->parent_node && rbt_is_right_chlid(min))
 						min = min->parent_node;
 					min = min->parent_node;
@@ -311,21 +394,25 @@ namespace ft {
 			}
 		}
 
+		/* Apply "action" to all the nodes of brt in orther left to right */
 		template<typename Action>
 		void								rbt_in_order_walk(Action action) const {
 			rbt_iter_in_orther_walk(root, action);
 		}
 
+		/* Apply "action" to btr starting in "node" and iterating over the children
+			all the next generations recursivelly */
 		template<typename Action>
 		void								rbt_recursive_in_order_walk(Node *node, Action action) const{
 			if (node != nil)
 			{
-				rbt_recursive_in_order_walk(node->children_left, action);
+				rbt_recursive_in_order_walk(node->child_left, action);
 				action(node->key, node->data);
-				rbt_recursive_in_order_walk(node->children_right, action);
+				rbt_recursive_in_order_walk(node->child_right, action);
 			}
 		}
 
+		/* Apply "action" to all the elements of the btr using a stack in letf-rigt order */
 		template<typename Action>
 		void								rbt_stack_in_order_walk(Node *node, Action action) const
 		{
@@ -336,76 +423,169 @@ namespace ft {
 
 			while (!stck.empty())
 			{
+				/* stack the nodes starting from the right (reversed order) */
 				while (node != nil)
 				{
-					stck.push(node->children_right);
+					stck.push(node->child_right);
 					stck.push(node);
-					node = node->children_left;
+					node = node->child_left;
 				}
+				/* action to the fisrt node in stack (the last node so the left one) */
 				if (stck.top())
 					action (stck.top()->key,stck.top()->data);
 				
+				/* removes the node who tooks an action */
 				stck.pop();
+				/* iterates and clear */
 				node = stck.top();
 				stck.pop();
 			}
 		}
 
-		template<typename Children1, typename Children2>
-		void							rbt_generic_fixed_delete(Node *node, Children1 ch1, Children2 ch2) {
-			Node *aux = ch2(node->parent_node);
+		/* Deletes the target_node updating the colors and returns a pointer to the root */
+		template<typename Child1, typename Child2>
+		void							rbt_generic_fixed_delete(Node **target_node, Child1 ch1, Child2 ch2) {
+			/* "aux" is the brother of "target_node" */
+			Node *aux = ch2((*target_node)->parent_node);
 			if (aux->color & RED)
 			{
-				std::swap(aux->color, node->parent_node->color);
-				rbt_generic_rotatation(node->parent_node, ch1, ch2);
-				aux = ch2(node->parent_node);
+				/* if the brother is red it swap his color with his parent, rotate by the parent
+					and "aux" (the rotated old brother) becomes his brother */
+				std::swap(aux->color, (*target_node)->parent_node->color);
+				rbt_generic_rotatation((*target_node)->parent_node, ch1, ch2);
+				aux = ch2((*target_node)->parent_node);
 			}
-			if (aux->children_left->color & RED && aux->children_right->color & RED)
+			
+			/* if "aux" childrens are black, "aux" should be red and "target" become his parent */
+			if (aux->child_left->color == BLACK && aux->child_right->color & BLACK)
 			{
 				aux->color |= RED;
-				node = node->parent_node;
+				*target_node = (*target_node)->parent_node;
 			}
-			else
+			else /* if almost 1 child is red */
 			{
-				if (ch2(aux) & RED)
+				/* if "ch2" (function pointer that returns a child) return a black child
+					the color will the swaped with his brother color, and then aux will be rotated */
+				if (ch2(aux)->color & BLACK)
 				{
 					std::swap(aux->color, ch1(aux)->color)
-					aux = rbt_generic_rotatation(aux, ch1, ch2);
+					aux = rbt_generic_rotatation(aux, ch2, ch1);
 				}
+				/* nodes color are updated nad then rotated */
 				aux->color = node->parent_node->color;
-				node->parent_node &= BLACK;
+				(*target_node)->parent_node &= BLACK;
 				ch2(aux)->color &= BLACK;
-				rbt_generic_rotatation(node->parent_node, ch1, ch2);
-				node = root;
+				rbt_generic_rotatation((*target_node)->parent_node, ch1, ch2);
+				*target_node = root;
 			}
 		}
 
-		template<typename Children1, typename Children2>
-		void							rbt_fixed_remove(Node *node) {
-			while (node != root && node->color & BLACK)
+		/* Removes the target using the deltion algorithm */
+		void							rbt_fixed_remove(Node *target_node) {
+			while (target_node != root && target_node->color == BLACK)
 			{
-				if (rbt_is_left_child(node))
-					rbt_generic_fixed_delete(node, node->children_left, node->children_right);
-					// check the previosu declaration
+				if (rbt_is_left_child(target_node))
+					rbt_generic_fixed_delete(&target_node, rbt_node_left_child, rbt_node_right_child);
 				else
-					rbt_generic_fixed_delete(node, node->children_right, node->children_left);
-					// check the previous declaration
+					rbt_generic_fixed_delete(&target_node, rbt_node_right_child, rbt_node_left_child);
 			}
-			node->color &= BLACK;
+			target_node->color &= BLACK;
 		}
-		
-		void							rbt_remove(const key_type &key, mapped_type &data)
+
+		/* Deletes a node using the rbt deletion algorithm */
+		void								rbt_delete_node(Node *target_node) {
+			Node *aux = target_node->child_right;
+			Node *xua = target_node;
+			bool color_remember = target_node->color;
+
+			if (target_node->child_left == nil)
+				rbt_move(target_node, aux);
+			else if (target_node->child_right == nil)
+				rbt_move(target_node, aux = aux->child_left);
+			else
+			{
+				xua = rtb_minimum(target_node->child_right);
+				color_remember = xua->color;
+				aux = xua->child_right;
+				if (xua->parent_node == target_node)
+					aux->parent_node = xua;
+				else
+				{
+					rbt_move(xua, xua->child_right);
+					xua->child_right = target_node->child_right;
+					xua->child_right->parent_node = xua;
+				}
+				rbt_move(target_node, xua);
+				xua->child_left = target_node->child_left;
+				xua->child_left->parent_node = aux;
+				xua->color = target_node->color;
+			}
+			if (color_remember == BLACK)
+				rbt_fixed_remove(aux);
+			size--;
+			node_mem(memory).destroy(target_node);
+			node_mem(memory).deallocate(target_node, 1);
+		}
+
+		/* Search using the key, if found something it ll be removed and "data" takes
+			a reference to found->data. Returns true on succes.s */
+		bool							rbt_remove(const key_type &key, mapped_type &data)
 		{
 			Node *node = rbt_find_node(key);
-			if (node != nil)
+			if (bool tmp = (node != nil))
 			{
 				data = node->data;
-				// delete v2
+				bst_delete_node_v2(node);
 			}
-			return (node != nil);
+			return (tmp);
+		}
+
+		/* Deletes a node using the rbt deletion algorithm */
+		void							rbt_delete_node_v2(Node *target_node)
+		{
+			Node *aux = target_node->child_right;
+			Node *xua = target_node;
+
+			if (target_node->child_left == nil)
+				rbt_move(target_node, aux);
+			else if (target_node->child_right == nil)
+				rbt_move(xua, aux);
+			else
+			{
+				xua = rtb_minimum(target_node->child_right);
+				aux = xua->child_right;
+				target_node->data = std::move(xua->data);
+				target_node->key = std::move(xua->key);
+				rbt_move(xua, aux);
+			}
+			if (xau->color == BLACK)
+				rbt_fixed_remove(aux);
+			total_size--;
+			node_mem(memory).destroy(xua);
+			node_mem(memory).deallocate(xua, 1);
 		}
 
 		public:
+
+		/* Class default methods */
+
+		map(const key_compare cmp = key_compare()) : comp(cmp), total_size(0), memory(allocator_type()) {
+			nil = create_node(key_compare(), mapped_type());
+			root = nil;
+		}
+		template<typename InputIt>
+		map(InputIt first, InputIt last, const key_compare &comp = key_compare()) : comp(cmp), total_size(0), memory(allocator_type()) {
+			nil = create_node(key_compare(), mapped_type());
+			root = nil;
+			// have to insert nodes in wald order using the iterators
+			// starts in first, ends in last
+		}
+		map(const map &other) : comp(cmp), total_size(0), memory(allocator_type()) {
+			*this = other;
+		}
+		~map() {
+			rbt_destroy(root);
+		}
 
 		/* Class methods definition*/
 
