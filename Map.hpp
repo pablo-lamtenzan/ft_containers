@@ -6,7 +6,7 @@
 /*   By: plamtenz <plamtenz@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/27 21:05:28 by plamtenz          #+#    #+#             */
-/*   Updated: 2020/09/29 13:07:15 by plamtenz         ###   ########.fr       */
+/*   Updated: 2020/09/29 13:29:13 by plamtenz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,33 +75,70 @@ namespace ft {
 			}
 		};
 
+		template<typename T, typename Key>
+		struct RBNode
+		{
+			enum class		Color
+			{
+				BLACK = 0,
+				RED = 1
+			};
+			T				data;
+			Key				key;
+			Color			color;	
+			RBNode			*child_left;
+			RBNode			*child_right;
+			RBNode			*parent_node;
+		
+		RBNode(Data d, Key k) : data(d), key(k), child_left(NULL); child_right(NULL), color(0) {}
+		~RBNode() {}		
+		};
+
 		protected:
 
-		typedef ft::RBNode<value_type, key_type>		Node;
+		typedef RBNode<value_type, key_type>			Node;
 		typedef Alloc::template rebind<Node>::other		node_mem;
 
 		/* Implementation of Map iterators */
-		template<typename I, bool is_accesor>
-		class rbt_it : public rbt_iterator<I, is_accesor>
+		template<typename T, typename Key, bool is_accesor>
+		class rbt_iterator
 		{
-			protected:
-			
-			// to do
-
 			public:
-			
-			typedef I															value_type;
-			typedef typename auto_const<is_accesor, I*, const I*>::obj_type		pointer;
-			typedef typename auto_const<is_accesor, I&, const I&>::obj_type		reference;
-			typedef typename remove_const<I>::obj_type							not_const_type;
-			typedef lst_it<not_const_type, false>								not_const_iterator;
-			typedef std::ptrdiff_t												difference_type;
-			typedef std::random_access_iterator_tag								iterator_category;
 
-			/* Defualt methods */
-			rbt_it() : rbt_iterator<I, is_accesor>() {}
-			// to do
-			~rbt_it() {}
+			/* Use the std methods developped in aux.hpp for define if T is const or not const */
+			typedef typename remove_const<T>::obj_type														not_const_type;	
+			typedef rbt_iterator<not_const_type, false>														not_const_iterator;
+			typedef typename auto_const<is_accesor, RBNode<T, Key>*, const RBNode<T, Key>*>::obj_type		node_pointer;
+			typedef T																						value_type;
+			typedef typename auto_const<is_accesor, T*, const T*>::obj_type									pointer;
+			typedef typename auto_const<is_accesor, T&, const T&>::obj_type									reference;
+			typedef ::std::ptrdiff_t																		difference_type;
+			typedef std::bidirectional_iterator_tag															iterator_category;
+
+			RBNode<not_const_type, Key>			*curr;
+			RBNode<not_const_type, Key>* const	*root; // mmm
+
+			/* Class defult methods implementation */
+			rbt_iterator() : curr(NULL), root(NULL) {}
+			rbt_iterator(RBNode<not_const_type, Key> &c, RBNode<not_const_type, Key>* const *r) : curr(c), root(r) {}
+			rbt_iterator(const not_const_iterator &target) : curr(target.curr), root(target.root) {}
+			~rbt_iterator() {}
+
+			/* Class operator methods */
+			reference				operator*() { curr ? return (curr->data) : throw std::out_of_range(std::string("Error: null ptr can't be deferenced")); }
+			pointer					operator->() { curr ? return (&curr->data) : throw std::out_of_range(std::string("Error: null ptr can't be deferenced"))); }
+			template<typename T, typename Key, typename is_accesor>
+			bool					operator==(const rbt_iterator<T, Key, is_accesor> &lhs, const rbt_iterator<T, Key, is_accesor> &rhs) { return (lsh.curr == rhs.curr); }
+			template<typename T, typename Key, typename is_accesor>
+			bool					operator!=(const rbt_iterator<T, Key, is_accesor> &lhs, const rbt_iterator<T, Key, is_accesor> &rhs) { return (lsh.curr != rhs.curr); }
+			rbt_iterator			&operator++() {
+				// i have the function for do this in my lib
+			}
+			rbt_iterator			operator++(int) { rbt_iterator aux(curr, root); operator++(); return (aux); }
+			rbt_iterator			&operator--() {
+				// i have the function for do this in my lib
+			}
+			rbt_iterator			operator--(int) { rbt_iterator aux(curr, root); operator--(); return (aux); }
 		};
 
 		/* Implementaion of Map reverse iterators */
@@ -124,8 +161,8 @@ namespace ft {
 		public:
 
 		/* Class member iterators types */
-		typedef rbt_it<value_type, false>				iterator;
-		typedef rbt_it<value_type, true>				const_iterator;
+		typedef rbt_iterator<value_type, false>			iterator;
+		typedef rbt_iterator<value_type, true>			const_iterator;
 		typedef rbt_rev_it<iterator>					reverse_iterator;
 		typedef rbt_rev_it<const_iterator>				const_reverse_iterator;			
 
@@ -381,13 +418,8 @@ namespace ft {
 			{
 				action(min->key, min->data);
 				/* if has a right child iterates the further possible to the right */
-<<<<<<< HEAD
 				if (min->child_right != nil)
 					min = rtb_minimum(min->child_right);
-=======
-				if (min->children_right != nil)
-					min = rtb_minimum(min->children_right);
->>>>>>> 0f0c13e000857b2412d226b9e7d9f36d6045a4f1
 				else
 				{
 					/* if "min" doesn't have a right child
