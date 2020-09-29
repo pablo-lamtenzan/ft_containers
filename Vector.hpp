@@ -6,7 +6,7 @@
 /*   By: plamtenz <plamtenz@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/27 12:33:31 by plamtenz          #+#    #+#             */
-/*   Updated: 2020/09/27 19:11:20 by plamtenz         ###   ########.fr       */
+/*   Updated: 2020/09/29 14:30:43 by plamtenz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,33 +42,69 @@ namespace ft {
 		size_of_type					capacity;
 		pointer							objs;
 		allocator_type					memory;
-		// resize ?
 
 		/* Vector iterator */
-		template<typename I, bool is_accesor>
-		class vec_it : public vec_iterator<I, is_accesor>
+		template<typename T, bool is_accesor>
+		class vec_iterator
 		{
-			protected:
-
-			using vec_iterator<I, is_accesor>::curr;
-
 			public:
+		
+			/* Use the std methods developped in aux.hpp for define if T is const or not const */
+			typedef typename remove_cost<T>::obj_type							not_const_type;
+			typedef typename add_const<T>::obj_type								const_type;
+			typedef vec_iterator<not_const_type, false>							not_const_iterator;
+			typedef vec_iterator<const_type, true>								const_iterator;
+			typedef T															value_type;
+			typedef typename auto_const<is_accesor, T*, const T*>::obj_type		pointer;
+			typedef typename auto_const<is_accesor, T&, const T&>::obj_type		reference;
+			typedef ::std::ptrdiff_t											difference_type;
+			typedef std::bidirectional_iterator_tag								iterator_category;
 
-			/* Iterator member types */
-			typedef I															value_type;
-			typedef typename auto_const<is_accesor, I*, const I*>::obj_type		pointer;
-			typedef typename auto_const<is_accesor, I&, const I&>::obj_type		reference;
-			typedef typename remove_const<I>::obj_type							not_const_type;
-			typedef lst_it<not_const_type, false>								not_const_iterator;
-			typedef std::ptrdiff_t												difference_type;
-			typedef std::random_access_iterator_tag								iterator_category;
-
-			/* Iterator default methods */
-			vec_it() : vec_iterator<I, false> () {}
-			vec_it(const vec_iterator<I, false> &it) : vec_iterator<I, is_accesor>(it.curr) {}
-			vec_it(const vec_it<I, is_accesor> &target) : vec_iterator<I, is_accesor>(target) {}
-			// using operator= 
+			/* Current address in the vector */
+			T																	*curr;
+		
+			/* Default class methods: constructors, copy constructor and destuctor */
+			vec_iterator() : curr(NULL) {}
+			vec_iterator(pointer ptr) : curr(ptr) {}
+			vec_iterator(const not_const_iterator &target) {
+				not_const_iterator copy = target;
+				std::swap(curr, copy.curr) // for destroy the old curr (when it gonna be out of the exec scope it'll be destroyed)
+				return (*this);
+			}
 			~vec_iterator() {}
+		
+			/* Implementation of vector iterator operators */
+			vec_iterator		&operator=(const not_const_type &target) { curr = target.ptr; return (*this); }
+			vec_iterator		operator+(difference_type nb) { return (vec_iterator(curr + nb);) }
+			int64_t				operator+(const not_const_iterator &obj) { return (((int64_t)curr + (int64_t)obj.curr) / (uint64_t)sizeof(value_type)); }
+			int64_t				operator+(const const_iterator &obj) { return (((int64_t)curr + (int64_t)obj.curr) / (int64_t)sizeof(value_type)); }
+			vec_iterator		operator-(difference_type nb) { return (vec_iterator(curr - nb)); }
+			int64_t				operator-(const not_const_iterator &obj) { return (((int64_t)curr - (int64_t)obj.curr) / (int64_t)sizeof(value_type)); }
+			int64_t				operator-(const const_iterator &obj) { return (((int64_t)curr - (int64_t)obj.curr) / (int64_t)sizeof(value_type)); }
+			vec_iterator		operator+=(difference_type nb) { curr += nb; return (*this); }
+			vec_iterator		operator-=(difference_type nb) { curr -= nb; return (*this); }
+			vec_iterator		operator++(int) { vec_iterator aux(curr); operator++(); return (aux); }
+			vec_iterator		&operator++() { curr++; return (*this); }
+			vec_iterator		operator--(int) { vec_iterator aux(curr); operator--(); return (aux); }
+			vec_iterator		&operator--() { curr--; return (*this); }
+			reference			operator*() {
+				if (curr)
+					return (curr->data);
+				throw::std::out_of_range(std::string("Error: null ptr hasn't address to deference"));
+			}
+			reference			operator[](difference_type nb) { return (curr + nb); }
+			template<typename T1, typename T2, bool is_accesor1, bool is_accesor2>
+			bool				operator==(vec_iterator<T1, is_accesor1> it1, vec_iterator<T2, is_accesor2> it2) { return (it1.curr == it2.curr); }
+			template<typename T1, typename T2, bool is_accesor1, bool is_accesor2>
+			bool				operator!=(vec_iterator<T1, is_accesor1> it1, vec_iterator<T2, is_accesor2> it2) { return (it1.curr != it2.curr); }
+			template<typename T1, typename T2, bool is_accesor1, bool is_accesor2>
+			bool				operator<(vec_iterator<T1, is_accesor1> it1, vec_iterator<T2, is_accesor2> it2) { return (it1.curr < it2.curr); }
+			template<typename T1, typename T2, bool is_accesor1, bool is_accesor2>
+			bool				operator<=(vec_iterator<T1, is_accesor1> it1, vec_iterator<T2, is_accesor2> it2) { return (it1.curr <= it2.curr); }
+			template<typename T1, typename T2, bool is_accesor1, bool is_accesor2>
+			bool				operator>(vec_iterator<T1, is_accesor1> it1, vec_iterator<T2, is_accesor2> it2) { return (it1.curr > it2.curr); }
+			template<typename T1, typename T2, bool is_accesor1, bool is_accesor2>
+			bool				operator>=(vec_iterator<T1, is_accesor1> it1, vec_iterator<T2, is_accesor2> it2) { return (it1.curr >= it2.curr); }
 		};
 
 		/* Vector reverse iterator */
@@ -94,13 +130,14 @@ namespace ft {
 		/* Iterators class members types */
 		public :
 
-		typedef lst_it<T, false>				iterator;
-		typedef lst_it<T, true>					const_iterator;
+		typedef lst_iterator<T, false>			iterator;
+		typedef lst_iterator<T, true>			const_iterator;
 		typedef lst_rev_it<iterator>			reverse_iterator;
 		typedef lst_rev_it<const_iterator>		const_reverse_iterator;
 
 		/* Core fill methods */
 
+		protected:
 		/* Allocates a new_array with the new capacity, move all the objs from the new_array,
 			swaps the new_array with the current array and deletes the (old) current array */
 		void				array_reserve(int32_t new_capacity) {
@@ -138,6 +175,7 @@ namespace ft {
 		vector(const vector<T, Alloc> &target) : objs(NULL) { *this = target; }
 		~vector() { for (size_of_type i(0) : i < total_size) memory.destroy(objs + i); memory.deallocate(objs, total_size); }
 		
+		public: 
 		/* List of methods */
 
 			/* Member functions */
