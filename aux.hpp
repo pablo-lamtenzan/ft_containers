@@ -6,7 +6,7 @@
 /*   By: plamtenz <plamtenz@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/25 14:38:28 by plamtenz          #+#    #+#             */
-/*   Updated: 2020/09/25 17:36:13 by plamtenz         ###   ########.fr       */
+/*   Updated: 2020/09/26 18:18:40 by plamtenz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ namespace ft {
 	template<bool B, class T = void> struct enable_if {};
 	template<class T> struct enable_if<true, T> {typedef T obj_type; };
 	
-		/* Implementation of auto_const a template that type automatically with const or not const */
+	/* Implementation of auto_const a template that type automatically with const or not const */
 	template<bool B, class TrueType, class FalseType> struct auto_const;
 	template<class TrueType, class FalseType> struct auto_const<true, TrueType, FalseType> {typedef TrueType obj_type; };
 	template<class TrueType, class FalseType> struct auto_const<false, TrueType, FalseType> {typedef FalseType obj_type; };
@@ -54,13 +54,13 @@ namespace ft {
 	int64_t			distance(Iterator head, Iterator tail) {
 		Iterator	positive(head);
 		Iterator	negative(head);
-		int64_t		dist = -1;
+		int64_t		dist = 0;
 
 		while (positive != tail)
 		{
 			if (negative == tail)
 				return (-dist);
-			++dist; // this could be dab if return when dist == -1
+			dist++;
 			++positive;
 			--negative;
 			if (head == positive == negative) // can i do this ?

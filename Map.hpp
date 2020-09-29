@@ -6,13 +6,13 @@
 /*   By: plamtenz <plamtenz@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/27 21:05:28 by plamtenz          #+#    #+#             */
-/*   Updated: 2020/09/29 14:22:44 by plamtenz         ###   ########.fr       */
+/*   Updated: 2020/09/29 14:41:43 by plamtenz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "ReverseIterators.hpp"
+#include "ReverseIterator.hpp"
 #include "Stack.hpp"
 
 # define BLACK		0
@@ -203,9 +203,6 @@ namespace ft {
 				node_mem(memory).deallocate(node, 1);
 			}
 		}
-
-		// RbTREE() do this in map constructor
-		// RBTREE()
 
 		/* Returns the current size of the rbt */
 		uint32_t							rbt_size() const { return (size); }

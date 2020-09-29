@@ -6,7 +6,7 @@
 /*   By: plamtenz <plamtenz@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/09/27 19:37:10 by plamtenz          #+#    #+#             */
-/*   Updated: 2020/09/27 20:17:04 by plamtenz         ###   ########.fr       */
+/*   Updated: 2020/09/27 20:26:30 by plamtenz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include "Vector.hpp"
 
 /* std::stack is a container adapter, thas mean it gives the functionality of a stack
-	of other containers */
+	to other containers */
 
 namespace ft {
 	
